@@ -1,0 +1,42 @@
+ARG POSTGRES_VERSION=16
+
+FROM postgres:${POSTGRES_VERSION}-bookworm
+
+ARG NODEJS_VERSION=22.x
+ARG PYTHON_VERSION=3.12.8
+ARG GOLANG_VERSION=1.23.4
+ARG POSTGRES_VERSION
+
+USER root
+
+WORKDIR /tmp
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt update && apt install -y apt build-essential curl gdb git libncursesw5-dev libssl-dev libsqlite3-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev postgresql-${POSTGRES_VERSION}-pgvector postgresql-server-dev-all procps software-properties-common tk-dev zlib1g-dev
+
+
+# Install Docker
+
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt update && apt install -y docker-ce-cli
+
+# Install Python
+
+RUN curl -fsSL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -zx -C ~/
+RUN cd ~/Python-${PYTHON_VERSION} && ./configure --with-pydebug && make -s -j$(nproc) && make install && update-alternatives --install /usr/bin/python python /usr/local/bin/python3 0 && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3 0 && update-alternatives --install /usr/bin/pydoc pydoc /usr/local/bin/pydoc3 0 && ln -sf /usr/bin/python /usr/bin/python3 && ln -sf /bin/python /bin/python3
+RUN pip install --no-cache-dir --upgrade debugpy pip poetry ruff && poetry config virtualenvs.create false
+
+# Install NodeJS
+
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODEJS_VERSION} nodistro main" > /etc/apt/sources.list.d/nodesource.list
+RUN apt update && apt install -y nodejs
+RUN npm install -g npm prettier eslint
+
+# Install GoLang
+
+RUN curl -fsSL https://go.dev/dl/go${GOLANG_VERSION}.linux-$(dpkg --print-architecture).tar.gz | tar -zx -C /usr/local/
+RUN echo "export PATH=/usr/local/go/bin:\$PATH" > /etc/profile.d/go.sh
+RUN source /etc/profile.d/go.sh && go install github.com/go-delve/delve/cmd/dlv@latest && go install golang.org/x/tools/gopls@latest && go install golang.org/x/tools/cmd/gorename@latest && go install honnef.co/go/tools/cmd/staticcheck@latest
