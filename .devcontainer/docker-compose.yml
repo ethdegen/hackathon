@@ -1,0 +1,35 @@
+services:
+    postgres:
+        init: true
+        build:
+            context: "."
+            args:
+                - "POSTGRES_VERSION=${POSTGRES_VERSION:-18}"
+        stop_grace_period: "1m"
+        shm_size: "2gb"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+            - "data_postgres:/var/lib/postgresql/${POSTGRES_VERSION:-18}/docker"
+            - "./..:/workspace"
+            - "node_modules:/workspace/nextapp/node_modules"
+            - "~/.ssh:/root/.ssh"
+            - "~/.aws:/root/.aws"
+            - "~/.claude:/root/.claude"
+            - "~/.kiro:/root/.kiro"
+            - "~/.local/share/kiro-cli/data.sqlite3:/root/.local/share/kiro-cli/data.sqlite3"
+        environment:
+            - "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres"
+            - "POSTGRES_PASSWORD=postgres"
+            - "PRISMA_SKIP_POSTINSTALL_GENERATE=true"
+            - "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000"
+            - "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright"
+            - "REDIS_URL=redis://redis:6379"
+
+    redis:
+        image: "bitnami/redis"
+        environment:
+            - "ALLOW_EMPTY_PASSWORD=yes"
+
+volumes:
+    data_postgres:
+    node_modules:

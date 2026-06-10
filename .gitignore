@@ -1,0 +1,7 @@
+.DS_Store
+
+# created by Prisma's auto-install when the Next App generates the JS client
+# from the Prisma Schema owned by the FastAPI server
+/node_modules
+/package.json
+/package-lock.json

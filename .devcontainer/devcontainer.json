@@ -1,0 +1,29 @@
+{
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "anthropic.claude-code",
+                "bradlc.vscode-tailwindcss",
+                "charliermarsh.ruff",
+                "dbaeumer.vscode-eslint",
+                "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "golang.go",
+                "ms-azuretools.vscode-docker",
+                "ms-playwright.playwright",
+                "ms-pyright.pyright",
+                "ms-python.isort",
+                "ms-python.python",
+                "ms-playwright.playwright",
+                "ms-toolsai.jupyter",
+                "Prisma.prisma",
+                "shd101wyy.markdown-preview-enhanced"
+            ]
+        }
+    },
+    "dockerComposeFile": ["./docker-compose.yml"],
+    "postStartCommand": "mkdir -p ${XDG_RUNTIME_DIR:-/run/user/0} && chmod 700 ${XDG_RUNTIME_DIR:-/run/user/0}",
+    "service": "postgres",
+    "shutdownAction": "stopCompose",
+    "workspaceFolder": "/workspace"
+}
